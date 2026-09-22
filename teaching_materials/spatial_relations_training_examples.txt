@@ -1,0 +1,60 @@
+the marble is inside the jar . the jar contains the marble .
+the compass is inside the drawer . the drawer contains the compass .
+the shell is inside the pouch . the pouch contains the shell .
+the candle is inside the cabinet . the cabinet contains the candle .
+the photograph is inside the envelope . the envelope contains the photograph .
+the seed is inside the fruit . the fruit contains the seed .
+the violin is inside the case . the case contains the violin .
+the coin is inside the purse . the purse contains the coin .
+the cookies are inside the tin . the tin contains the cookies .
+the tools are inside the chest . the chest contains the tools .
+the kite is above the meadow . the meadow is below the kite .
+the balcony is above the courtyard . the courtyard is below the balcony .
+the moon is above the horizon . the horizon is below the moon .
+the bridge is above the stream . the stream is below the bridge .
+the portrait is above the fireplace . the fireplace is below the portrait .
+the clock is above the doorway . the doorway is below the clock .
+the nest is above the pathway . the pathway is below the nest .
+the cabin is above the valley . the valley is below the cabin .
+the banner is above the stage . the stage is below the banner .
+the attic is above the bedroom . the bedroom is below the attic .
+the cafe stands left of the theater . from the cafe , the theater lies on the right .
+the orchard stands left of the barn . from the orchard , the barn lies on the right .
+the fountain stands left of the gallery . from the fountain , the gallery lies on the right .
+the bakery stands left of the pharmacy . from the bakery , the pharmacy lies on the right .
+the harbor stands left of the lighthouse . from the harbor , the lighthouse lies on the right .
+the garden stands left of the greenhouse . from the garden , the greenhouse lies on the right .
+the pond stands left of the windmill . from the pond , the windmill lies on the right .
+the workshop stands left of the stable . from the workshop , the stable lies on the right .
+the trail stands left of the creek . from the trail , the creek lies on the right .
+the tower stands left of the chapel . from the tower , the chapel lies on the right .
+the bench stands beside the fountain in the plaza .
+the bicycle rests beside the stone wall .
+the violin case sits beside the music stand .
+the picnic basket waits beside the oak tree .
+the canoe lies beside the riverbank .
+the suitcase remains beside the elevator .
+the greenhouse stands north of the orchard .
+the vineyard stretches south of the farmhouse .
+the observatory is north of the desert town .
+the fishing village is south of the rocky cape .
+the archive contains letters from several decades .
+the recipe contains herbs from the garden .
+the bronze lamp needs a new shade .
+the book describes animals of the deep ocean .
+the carpenter installed a shelf for the pottery .
+the worker cleaned the desk before leaving .
+children kicked the ball across the playground .
+the courier sealed the box with strong tape .
+the traveler packed a canvas bag with tools .
+the wooden cabinet stood near the window .
+a bright flag fluttered above the entrance .
+the village rested below the mountain ridge .
+the red bicycle remained inside the garage .
+the musician waited beside the curtain .
+the trail turned left near the waterfall .
+the sign pointed right at the intersection .
+the migrating birds flew north during spring .
+the research ship traveled south in january .
+the sculpture occupied the center of the courtyard .
+the orchard extended beyond the old stone fence .

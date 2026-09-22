@@ -1,0 +1,34 @@
+{
+  "model_sha256": "1869513ad6c693fbcb8568cf92b1e212f6e3d114a2a1a2de2be44dd3f2d7b7f2",
+  "completed_steps": 3000,
+  "fresh_context_per_prompt": true,
+  "temperature": 0.8,
+  "max_tokens": 24,
+  "turns": [
+    {
+      "prompt": "the spaceship landed on mars",
+      "seed": 2026,
+      "response": "right .",
+      "unknown_prompt_words": [
+        "landed",
+        "mars",
+        "spaceship"
+      ],
+      "prompt_truncated": false
+    },
+    {
+      "prompt": "keira did not carry boots . she carried a scarf . keira carried",
+      "seed": 2027,
+      "response": ".",
+      "unknown_prompt_words": [],
+      "prompt_truncated": false
+    },
+    {
+      "prompt": "the balcony is above the stream . the stream is",
+      "seed": 2028,
+      "response": "above the .",
+      "unknown_prompt_words": [],
+      "prompt_truncated": false
+    }
+  ]
+}

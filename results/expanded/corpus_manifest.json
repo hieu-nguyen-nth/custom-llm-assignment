@@ -1,0 +1,33 @@
+{
+  "files": [
+    {
+      "file": "negation_training_examples.txt",
+      "bytes": 3819,
+      "sha256": "68cfd7194a48791daae39639809ef2ce49ee4ba7b7edb10d10fad7bde5c062ba",
+      "warnings": [],
+      "characters": 3819,
+      "passages": 88,
+      "unique_passages": 88,
+      "preview": "keira did not carry gloves . she carried a scarf instead .\nravi did not play the drum . he played the flute instead .\ntessa did not visit the harbor . she visited the museum instead .\nidris did not repair the bicycle . he repaired the wagon instead .\nyuki did not select the oval plate . she selected"
+    },
+    {
+      "file": "spatial_relations_training_examples.txt",
+      "bytes": 3594,
+      "sha256": "a30d94fdc2f128bbb049c7bd1e03d09bbd908132987198a2e208f8bc6368a25f",
+      "warnings": [],
+      "characters": 3594,
+      "passages": 90,
+      "unique_passages": 90,
+      "preview": "the marble is inside the jar . the jar contains the marble .\nthe compass is inside the drawer . the drawer contains the compass .\nthe shell is inside the pouch . the pouch contains the shell .\nthe candle is inside the cabinet . the cabinet contains the candle .\nthe photograph is inside the envelope "
+    }
+  ],
+  "ignored": [],
+  "external_passages": 178,
+  "mode": "classroom",
+  "base_passages": 6200,
+  "unique_passages": 4770,
+  "new_unique_passages": 178,
+  "duplicates_removed": 1608,
+  "max_passage_tokens": 47,
+  "split_unit": "deduplicated passage, not source file"
+}

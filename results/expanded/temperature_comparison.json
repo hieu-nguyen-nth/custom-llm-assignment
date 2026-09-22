@@ -1,0 +1,20 @@
+{
+  "0.3": [
+    "the important professor was mentioned in the student report yesterday .",
+    "the new physician was mentioned in the health report yesterday .",
+    "the team discussed the nurse and the patient at the hospital .",
+    "the local doctor was mentioned in the care report yesterday ."
+  ],
+  "0.8": [
+    "our store has a question about the new shopper and support .",
+    "a review of service helped us understand the new subscriber .",
+    "the local customer was mentioned in the service report yesterday .",
+    "today the school focused on course and the different teacher ."
+  ],
+  "1.2": [
+    "instructor hill professor traffic select <UNK> along the tire .",
+    "a review of return helped us understand the different mortgage .",
+    "the important peach was mentioned in the juice report yesterday .",
+    "the local dentist was mentioned in the skipped report yesterday ."
+  ]
+}
