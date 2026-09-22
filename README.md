@@ -1,75 +1,85 @@
-# Custom nanoGPT Language Model Experiment
+# My Custom nanoGPT Experiment
 
-This repository documents two small nanoGPT experiments trained from scratch with whole-word tokens. The goal was not to create a general chatbot. The goal was to observe how a corpus becomes tokens, predictions, loss, gradients, weight updates, embeddings, generated text, and measurable evaluation results.
+For this assignment, I trained the provided nanoGPT model from scratch and compared two runs. My first run used only the classroom corpus. For my second run, I added examples for negation and spatial relationships.
 
-The first experiment used only the supplied classroom corpus. The second kept that corpus and added original teaching examples for **negation** and **spatial relations**. Both experiments used the same 3,000-step training budget, learning rate, seed, evaluation suite, and generation settings.
+This is a tiny word-prediction model, not a general chatbot. My main goal was to see how changing the training data affected loss, generated text, vocabulary coverage, and the fixed language evaluations.
 
-## Results at a glance
+## Main results
 
-The evaluation suite contains 48 fixed cases. `Correct / 48` includes every case, while scorable accuracy includes only cases whose prompt and four choices fit the saved vocabulary and context window.
-
-| Experiment | Stage | Correct / 48 | Scorable / 48 | Accuracy among scorable | Coverage | Complete results |
+| Experiment | Stage | Correct / 48 | Scorable / 48 | Accuracy on scorable cases | Coverage | Results |
 |---|---:|---:|---:|---:|---:|---|
-| Classroom baseline | Untrained | 9 | 24 | 37.50% | 50.00% | [CSV](results/baseline/language_evals/untrained/eval_results.csv) / [JSON](results/baseline/language_evals/untrained/eval_results.json) / [summary](results/baseline/language_evals/untrained/eval_summary.json) |
-| Classroom baseline | Trained | 20 | 24 | 83.33% | 50.00% | [CSV](results/baseline/language_evals/final/eval_results.csv) / [JSON](results/baseline/language_evals/final/eval_results.json) / [summary](results/baseline/language_evals/final/eval_summary.json) |
+| Classroom corpus | Untrained | 9 | 24 | 37.50% | 50.00% | [CSV](results/baseline/language_evals/untrained/eval_results.csv) / [JSON](results/baseline/language_evals/untrained/eval_results.json) / [summary](results/baseline/language_evals/untrained/eval_summary.json) |
+| Classroom corpus | Trained | 20 | 24 | 83.33% | 50.00% | [CSV](results/baseline/language_evals/final/eval_results.csv) / [JSON](results/baseline/language_evals/final/eval_results.json) / [summary](results/baseline/language_evals/final/eval_summary.json) |
 | Expanded corpus | Untrained | 10 | 26 | 38.46% | 54.17% | [CSV](results/expanded/language_evals/untrained/eval_results.csv) / [JSON](results/expanded/language_evals/untrained/eval_results.json) / [summary](results/expanded/language_evals/untrained/eval_summary.json) |
 | Expanded corpus | Trained | 24 | 26 | 92.31% | 54.17% | [CSV](results/expanded/language_evals/final/eval_results.csv) / [JSON](results/expanded/language_evals/final/eval_results.json) / [summary](results/expanded/language_evals/final/eval_summary.json) |
 
-These scores do not tell the whole story. The expanded model improved the starter-transfer group from 4/8 in the trained baseline to 7/8, and one spatial case was correct. However, the extension group remained only 2/24 scorable because the expanded corpus exceeded the model's 509 retained training-token types. All negation cases remained unscorable. This is a limitation of my data design, not evidence that the model learned negation successfully.
+The overall score increased in both runs after training. The expanded model also did better on the new-wording group. However, my added data did not work as well as I expected for the two categories I chose. Only two extension cases were scorable, and all three negation cases were still unscorable. I explain why below.
 
-## Experiment choices and prediction
+## What I chose
 
-### Experiment 1: classroom baseline
+I used these settings for both experiments:
 
-- Corpus: supplied synthetic classroom sentences only
-- Training steps: 3,000
-- Learning rate: 0.001 with the notebook's warmup and cosine decay
-- Seed: 42
+- 3,000 training steps
+- 0.001 learning rate
+- seed 42
+- the provided 48-case evaluation suite
 
-I predicted that training and validation loss would fall, generated sentences would begin to resemble the classroom templates, and familiar classroom patterns would improve. I also expected extension categories to remain weak because their words and patterns were absent. That prediction was supported: the final model passed all 16 reserved starter-pattern cases, but all 24 extension cases were unscorable.
+I kept the settings the same so that the main planned difference was the corpus.
 
-### Experiment 2: expanded corpus
+### Baseline run
 
-I kept the same settings and added two original UTF-8 text files:
+The baseline used the supplied classroom corpus without added files. Before training, I expected the model to learn the repeated classroom sentence patterns but fail on extension skills that were not represented in its vocabulary. That is close to what happened. The trained model passed all 16 starter-pattern cases, while all 24 extension cases were unscorable.
+
+### Expanded run
+
+For the second run, I added:
 
 - [68 lines of negation examples](teaching_materials/negation_training_examples.txt)
 - [60 lines of spatial-relation examples](teaching_materials/spatial_relations_training_examples.txt)
 
-The importer split sentences at boundaries, producing 88 negation passages and 90 spatial passages, or 178 new unique passages total. I chose these categories because the baseline had zero vocabulary coverage for both, and both can be taught with varied, concrete statements rather than copied test stories.
+The notebook split some lines into more than one passage, so the actual import was 88 negation passages plus 90 spatial passages. This added 178 unique passages.
 
-I predicted that the added vocabulary would make both categories scorable. This prediction was only partly supported. Spatial coverage reached 2/3 cases, but negation stayed at 0/3 scorable. The expanded training text contained 543 token types, while the model retains only the 509 most frequent types. Thirty-four types became `UNK`, including words needed by the public evaluation such as `yellow`, `milk`, `bread`, `wide`, and `to`.
+I chose negation because the model needed to separate a rejected statement from a corrected statement. I chose spatial relationships because the model needed to reverse relationships such as above/below and left/right. I used different names, objects, and situations from the evaluation cases.
 
-### Sources, permissions, and extraction checks
+My prediction was that the added words would make both categories scorable and that training might improve their results. This prediction was only partly correct. Spatial coverage increased to two out of three cases, but negation stayed at zero scorable cases.
 
-The classroom sentences came from the supplied notebook. I created and manually reviewed the two synthetic extension files for this assignment with AI assistance. They contain no private information or external copyrighted documents and may be published in this repository. No PDFs were used, so OCR and PDF reading-order checks were unnecessary. Both files imported with no warnings; filenames, hashes, previews, and counts are recorded in the [expanded corpus manifest](results/expanded/corpus_manifest.json).
+The reason was the vocabulary limit. The expanded training text had 543 token types, but the model kept only the 509 most frequent training types. Thirty-four types became `UNK`. Some of those omitted words were needed by the public evaluation, including `yellow`, `milk`, `bread`, `wide`, and `to`. I added too many different low-frequency words instead of keeping the extension corpus focused.
 
-## Run details
+## Data source and permissions
 
-| Property | Baseline | Expanded |
+The baseline data came from the supplied notebook. I created and reviewed the two synthetic extension files for this assignment with AI assistance. They do not contain private information or copied documents, and I have permission to publish them.
+
+I used TXT files rather than PDFs, so OCR was not needed. Both files imported without warnings. The [expanded corpus manifest](results/expanded/corpus_manifest.json) records their names, hashes, previews, and passage counts.
+
+I kept the teaching files in `teaching_materials/` in this repository so that a baseline rerun does not accidentally load them. For an expanded rerun, they should be copied into `corpus/` first.
+
+## Run information
+
+| Item | Baseline | Expanded |
 |---|---:|---:|
-| Executed notebook | [open](notebooks/custom_llm_baseline_classroom_3000_executed.ipynb) | [open](notebooks/custom_llm_expanded_negation_spatial_3000_executed.ipynb) |
-| Config | [JSON](results/baseline/config.json) | [JSON](results/expanded/config.json) |
-| Training summary | [JSON](results/baseline/training_summary.json) | [JSON](results/expanded/training_summary.json) |
-| Completed steps | 3,000 | 3,000 |
-| Elapsed time | 57.89 seconds | 60.87 seconds |
-| Interrupted | No | No |
-| Device | Colab CPU | Colab CPU |
+| Executed notebook | [Notebook](notebooks/custom_llm_baseline_classroom_3000_executed.ipynb) | [Notebook](notebooks/custom_llm_expanded_negation_spatial_3000_executed.ipynb) |
+| Configuration | [config.json](results/baseline/config.json) | [config.json](results/expanded/config.json) |
+| Training summary | [training_summary.json](results/baseline/training_summary.json) | [training_summary.json](results/expanded/training_summary.json) |
+| Steps completed | 3,000 | 3,000 |
+| Training interrupted | No | No |
+| Time | 57.89 seconds | 60.87 seconds |
+| Hardware | Colab CPU | Colab CPU |
 | Parameters | 111,872 | 135,936 |
 | Vocabulary size | 136 | 512 |
 | Training passages | 4,132 | 4,293 |
 | Validation passages | 460 | 477 |
 | Training unknown-token rate | 0.00% | 0.07% |
-| Held-out unknown-token rate | 0.00% | 0.64% |
+| Validation unknown-token rate | 0.00% | 0.64% |
 | Vocabulary report | [JSON](results/baseline/vocabulary_report.json) | [JSON](results/expanded/vocabulary_report.json) |
-| Split evidence | [JSON](results/baseline/split.json) | [JSON](results/expanded/split.json) |
+| Split record | [JSON](results/baseline/split.json) | [JSON](results/expanded/split.json) |
 
-The 90/10 split is by deduplicated short passage, not by source file. It measures prediction on held-out combinations from the same kinds of data, not generalization to an unseen document or domain.
+The notebook split the unique passages 90/10. Validation passages did not update the weights. However, the training and validation data still came from the same kinds of sources and templates, so this is not a test on a completely new domain.
 
-## Loss and generated samples
+## Loss and samples
 
-Loss is the model's penalty for assigning low probability to the actual next token. Lower loss means better next-token prediction on that panel. Each row below uses fixed panels of at most 20 training and 20 validation passages and averages non-padding next-token targets.
+Loss measures how wrong the model's next-token predictions are. Lower is better. These values came from fixed panels of 20 training and 20 validation passages.
 
-### Classroom baseline losses
+### Baseline loss
 
 | Step | Training loss | Validation loss |
 |---:|---:|---:|
@@ -77,11 +87,11 @@ Loss is the model's penalty for assigning low probability to the actual next tok
 | 1,500 | 0.6821 | 0.7182 |
 | 3,000 | 0.6783 | 0.7061 |
 
-![Baseline training and validation loss](results/baseline/training_curves.svg)
+![Baseline loss curves](results/baseline/training_curves.svg)
 
-[Full baseline history](results/baseline/history.json) and [training CSV](results/baseline/training.csv).
+[Baseline history](results/baseline/history.json) and [training CSV](results/baseline/training.csv)
 
-### Expanded-corpus losses
+### Expanded loss
 
 | Step | Training loss | Validation loss |
 |---:|---:|---:|
@@ -89,34 +99,36 @@ Loss is the model's penalty for assigning low probability to the actual next tok
 | 1,500 | 0.7586 | 0.8987 |
 | 3,000 | 0.7352 | 0.8919 |
 
-![Expanded training and validation loss](results/expanded/training_curves.svg)
+![Expanded loss curves](results/expanded/training_curves.svg)
 
-[Full expanded history](results/expanded/history.json) and [training CSV](results/expanded/training.csv).
+[Expanded history](results/expanded/history.json) and [training CSV](results/expanded/training.csv)
 
-Both experiments learned their training patterns. The validation loss remained above training loss, especially for the expanded run, showing that held-out prediction was harder. Loss values across these runs are not a ranking because their vocabularies and corpora differ.
+Both loss curves dropped a lot. Validation loss stayed higher than training loss, especially in the expanded run. This means the held-out examples were harder. I do not treat the loss numbers from the two experiments as a direct ranking because their corpora and vocabularies were different.
 
-The [untrained baseline samples](results/baseline/samples/step_0000.txt) were mostly unrelated words. At [step 1,500](results/baseline/samples/step_1500.txt), complete classroom-style sentences appeared. At [step 3,000](results/baseline/samples/step_3000.txt), examples included:
+The [untrained baseline samples](results/baseline/samples/step_0000.txt) were mostly disconnected words. The [halfway samples](results/baseline/samples/step_1500.txt) began to follow the classroom sentence templates. The [final baseline samples](results/baseline/samples/step_3000.txt) included sentences such as:
 
 > our school has a question about the new educator and lesson .
 
 > the report about the nurse explains the health in detail .
 
-The expanded run shows the same timeline in its [untrained](results/expanded/samples/step_0000.txt), [halfway](results/expanded/samples/step_1500.txt), and [final](results/expanded/samples/step_3000.txt) sample files. The final free samples still favored the much larger classroom portion of the corpus, which helps explain why the small extension did not dominate generation.
+The expanded run has the same saved stages: [untrained](results/expanded/samples/step_0000.txt), [halfway](results/expanded/samples/step_1500.txt), and [final](results/expanded/samples/step_3000.txt). Most final free samples still looked like classroom sentences because that corpus was much larger than my extension.
 
-## Token, embedding, probability, gradient, and update evidence
+## One token and one real update
 
-The baseline [tokenization record](results/baseline/tokenization.json) maps each normalized word or punctuation mark to an integer. These IDs are lookup addresses, not measurements of meaning. In this run, `customer` had token ID **28**. Its embedding was a learned row of 64 numbers. The coordinates do not individually have named meanings; together they are adjusted to make useful predictions.
+The [baseline tokenization record](results/baseline/tokenization.json) shows how text was separated into words and punctuation. A token is one of those pieces. A token ID is just its integer lookup address. An embedding is the learned row of 64 numbers stored at that address.
+
+In the baseline run, `customer` had token ID **28**.
 
 <details>
-<summary>Full 64-number customer embedding before and after baseline training</summary>
+<summary>Customer's full 64-number embedding before and after training</summary>
 
-Before:
+Before training:
 
 ```text
 [-0.0575919151, -0.0048099528, 0.0426318869, 0.0193389561, 0.0156431366, -0.0288243648, 0.0256090555, 0.0000524609, 0.0247068163, 0.0206917655, 0.0073690168, -0.0330896154, -0.0535478629, -0.0057429299, -0.0241667628, -0.0147161186, 0.0046857060, -0.0104542682, -0.0083810752, -0.0182585604, -0.0201337002, 0.0050986498, -0.0109165022, -0.0126333516, 0.0283896253, -0.0026312231, -0.0040719286, 0.0136419199, -0.0098917242, -0.0167176239, 0.0019060791, -0.0014535071, 0.0160265211, -0.0056748749, -0.0006723482, -0.0012907272, -0.0073194727, -0.0009307071, 0.0015076200, -0.0049766386, -0.0289870203, 0.0180929881, -0.0073480136, -0.0054402542, 0.0156412050, -0.0045435056, 0.0415679365, 0.0523554347, 0.0226426851, -0.0154142790, -0.0251212027, -0.0067974632, 0.0293527506, -0.0025336796, 0.0298012327, -0.0227970053, -0.0302379131, 0.0064367834, 0.0504908115, 0.0074909981, -0.0107228607, 0.0247373320, -0.0144687248, 0.0132359108]
 ```
 
-After:
+After training:
 
 ```text
 [0.0366296992, -0.0182185024, 0.1330299377, 0.1059506908, 0.0630148426, 0.0189134274, 0.1523023844, 0.0929090306, -0.0632185191, -0.0172564723, 0.0340957716, -0.0473868959, -0.0645541325, -0.0865872502, -0.1449920833, -0.0358831659, -0.1569090337, -0.1502727568, -0.0076226699, -0.0707449093, -0.0930146873, 0.0091073206, -0.0648097619, 0.0175223872, 0.0039232811, -0.0624555722, 0.1125202551, -0.0643264502, 0.0520459376, -0.1566736698, -0.0706168264, 0.0616783947, -0.0317700915, 0.1413957477, 0.0913106054, 0.0564718805, 0.0196089223, -0.1348370463, 0.1222854555, -0.0338327177, 0.1187400743, 0.0045771315, -0.1344321966, 0.0529430658, -0.0375969820, -0.1031212285, 0.0202728808, 0.0381161012, -0.0198408831, -0.1507370323, 0.0302807782, -0.1205541790, 0.0166181829, 0.0777545646, 0.1180882081, 0.0557370037, 0.0933613256, 0.0026232316, 0.0370569825, 0.0756325200, 0.1185193658, 0.0143766562, 0.0912887752, -0.0746104345]
@@ -124,71 +136,75 @@ After:
 
 </details>
 
-For the first optimizer update, coordinate 0 of this embedding had:
+For the first saved update of coordinate 0:
 
-- Value before: `-0.0575919151`
-- Gradient: `0.0006925865`
-- Step learning rate during warmup: `0.00001`
-- Value after AdamW update: `-0.0576019064`
+- value before: `-0.0575919151`
+- gradient: `0.0006925865`
+- warmup learning rate: `0.00001`
+- value after the AdamW update: `-0.0576019064`
 
-The gradient indicates how changing that value would affect loss. AdamW combines this signal with its running statistics and weight decay, then updates the parameter. Repeating this across many batches changed the full embedding and the model's predictions.
+The gradient pointed to how the parameter affected the loss. AdamW used that gradient and its running statistics to change the weight. Repeating this process over many batches changed the whole embedding.
 
-Before baseline training, the five closest full-space cosine neighbors of `customer` were `bus` (0.213), `educator` (0.203), `helped` (0.202), `bank` (0.201), and `risk` (0.198). After training, they became `shopper` (0.978), `client` (0.977), `buyer` (0.977), `subscriber` (0.971), and `consumer` (0.970). Those final neighbors make sense because the classroom corpus deliberately places those words in similar contexts. The offline viewer compresses 64 dimensions into three with PCA, so visual distance can be distorted; its neighbor ranking uses cosine similarity in the full 64-dimensional space.
+The nearest neighbors also became more meaningful. Before training, the five closest cosine neighbors of `customer` were `bus`, `educator`, `helped`, `bank`, and `risk`, with weak similarities around 0.20. After training, they were `shopper`, `client`, `buyer`, `subscriber`, and `consumer`, all above 0.97. These words appeared in similar classroom contexts. The 3D viewer uses PCA, so its picture loses some information; the neighbor calculation uses all 64 dimensions.
 
-For the prefix `the customer`, the untrained model's top predictions were diffuse: `customer` 1.60%, `bus` 1.07%, `educator` 1.04%, `us` 1.03%, and `application` 1.01%. After training, the top predictions became classroom-style verbs: `reviewed` 17.82%, `recommended` 17.12%, `ordered` 16.85%, `selected` 16.34%, and `compared` 15.97%. The complete arrays, attention rows, vectors, and update are in [inspection.json](results/baseline/inspection.json).
+For the prefix `the customer`, the untrained top predictions were spread out. The top five were `customer` 1.60%, `bus` 1.07%, `educator` 1.04%, `us` 1.03%, and `application` 1.01%. After training, the top five were classroom-style verbs: `reviewed` 17.82%, `recommended` 17.12%, `ordered` 16.85%, `selected` 16.34%, and `compared` 15.97%.
 
-This is a neural network because learned matrices transform token and position embeddings through attention, feed-forward layers, residual connections, and normalization. Causal attention combines information from earlier positions but masks future positions. The final scores become probabilities, and sampling chooses the next token from that distribution.
+The complete vectors, probabilities, first update, and attention rows are in [inspection.json](results/baseline/inspection.json).
 
-## Temperature
+## What the network is doing
 
-Temperature changes sampling during inference; it does not update the model weights. At 0.3, the baseline output was conservative and template-like. At 0.8, it showed slightly more variety while remaining coherent. At 1.2, this particular baseline seed was still similar, while the expanded run became noticeably noisier and included `UNK`. See the complete [baseline](results/baseline/temperature_comparison.json) and [expanded](results/expanded/temperature_comparison.json) temperature samples.
+The model first looks up token and position embeddings. Its attention layers combine information from earlier tokens. A causal mask prevents a token from looking at future tokens. Feed-forward layers and other learned weights transform the representations again. The final scores are converted into next-token probabilities.
 
-## Fixed language evaluations
+During training, the model compares its prediction with the actual next token. Loss measures the error. Backpropagation calculates gradients, and AdamW updates the weights. During generation, the model samples one next token and repeats the process.
 
-The unchanged public suite is [evals/language_evals.json](evals/language_evals.json), and [run_evals.py](run_evals.py) performs inference and scoring. The runner gives the model only the prompt. It scores whether the correct word has the highest probability among four fixed choices; the separately saved free continuation is evidence for inspection, not the multiple-choice score. Ties, unknown words, and excessive context receive zero in the all-case metric.
+Temperature only changes sampling. It does not retrain the model. At temperature 0.3, my baseline output was conservative and repeated familiar patterns. At 0.8, it had a little more variety. At 1.2, the expanded run became noticeably noisier and sometimes produced `UNK`. The full samples are in the [baseline](results/baseline/temperature_comparison.json) and [expanded](results/expanded/temperature_comparison.json) temperature files.
 
-### Group and selected-category results after training
+## Evaluation details
 
-| Measurement | Baseline trained | Expanded trained |
+The fixed suite is [language_evals.json](evals/language_evals.json), and [run_evals.py](run_evals.py) runs it. The runner sends only the prompt to the model. The score checks which of four words has the highest next-token probability. The saved free continuation is separate from this score.
+
+| Result after training | Baseline | Expanded |
 |---|---:|---:|
 | Starter patterns | 16/16 | 16/16 |
-| New-wording transfer | 4/8 | 7/8 |
-| Extension group | 0/24, 0 scorable | 1/24, 2 scorable |
+| New wording | 4/8 | 7/8 |
+| Entire extension group | 0/24, 0 scorable | 1/24, 2 scorable |
 | Negation | 0/3, 0 scorable | 0/3, 0 scorable |
 | Spatial relations | 0/3, 0 scorable | 1/3, 2 scorable |
 
-The baseline learned its repeated classroom templates well. The expanded model retained that performance and did better on familiar words in new wording. For spatial relations, it answered the inside/contains case correctly, missed the above/below case, and could not score the left/right case because `to` fell outside the retained vocabulary. All three negation cases were unscorable because at least one required prompt or choice word was omitted by the vocabulary cap. I therefore cannot claim that the model learned negation from this run.
+For spatial relations, the expanded model got the inside/contains case right. It missed the above/below case. It could not score the left/right case because `to` was outside the retained vocabulary. I cannot claim that the model learned negation because none of those three cases were scorable.
 
-Complete comparison and category breakdowns are available in [baseline language_eval_comparison.json](results/baseline/language_eval_comparison.json) and [expanded language_eval_comparison.json](results/expanded/language_eval_comparison.json). Every failure and free continuation remains in the linked per-case JSON and CSV files.
+Full category breakdowns are in the [baseline comparison](results/baseline/language_eval_comparison.json) and [expanded comparison](results/expanded/language_eval_comparison.json). The linked CSV and JSON files at the top of this README keep every case, failure, probability, and free continuation.
 
-### Evaluation separation and leakage prevention
+## Keeping the evaluations separate
 
-The fixed suite stayed in `evals/`, while teaching files stayed in `corpus/` only during the expanded Colab run. Evaluation prompts, choices, correct answers, generated outputs, and chat transcripts were never used to build vocabulary or update weights. The notebook rejected exact reserved prefixes and saved [baseline](results/baseline/eval_separation.json) and [expanded](results/expanded/eval_separation.json) separation records.
+The evaluation suite stayed in `evals/`. I did not put evaluation prompts, answer choices, correct answers, outputs, or chat logs into the training corpus. The notebook also removed reserved classroom prefixes and saved [baseline](results/baseline/eval_separation.json) and [expanded](results/expanded/eval_separation.json) separation records.
 
-I also reviewed the two teaching files against all 48 cases. They contain no exact evaluation prompt, no four-token-or-longer prompt match, and none of the test-specific entity/answer pairings. Ordinary vocabulary and the underlying concepts overlap because otherwise the model could not learn the skills. Exact-match checks cannot detect every paraphrase, so manual separation was still necessary. Because the public suite guided the choice of extension categories, these results are a development benchmark, not proof of unseen generalization.
+I checked my teaching files against all 48 cases. They had no exact evaluation prompt, no matching sequence of four or more prompt tokens, and none of the test-specific entity/answer pairings. Ordinary words and the general language skills overlap because the model needs examples of the concepts. The automated checks only catch exact text, so I also reviewed the files manually.
 
-## Chat interface
+These evaluations are public and influenced my choice of categories. I treat them as a development benchmark, not as proof of performance on unseen tests.
 
-The demonstrated model is the expanded run `20260922T055941_580949Z`, trained for 3,000 steps. Its model SHA-256 recorded in the transcript is `1869513ad6c693fbcb8568cf92b1e212f6e3d114a2a1a2de2be44dd3f2d7b7f2`.
+## Chat demonstration
 
-| Prompt | Actual model response | Observation |
+I used the expanded model from run `20260922T055941_580949Z`. It had completed 3,000 steps, and the transcript identifies the same saved model used by the final evaluation.
+
+| Prompt | Actual response | What I noticed |
 |---|---|---|
-| `the spaceship landed on mars` | `right .` | `spaceship`, `landed`, and `mars` were unknown. |
-| `keira did not carry boots . she carried a scarf . keira carried` | `.` | All words were known, but the model failed to supply the corrected object. |
-| `the balcony is above the stream . the stream is` | `above the .` | All words were known, but it failed to reverse the relation to `below`. |
+| `the spaceship landed on mars` | `right .` | Three prompt words were unknown. |
+| `keira did not carry boots . she carried a scarf . keira carried` | `.` | Every word was known, but the model did not produce the corrected object. |
+| `the balcony is above the stream . the stream is` | `above the .` | Every word was known, but the model failed to reverse the relationship. |
 
-![Three expanded-model chat interactions](evidence/expanded_chat_3_interactions.png)
+![Three chat interactions](evidence/expanded_chat_3_interactions.png)
 
-The complete transcript is [chat_transcript.json](results/expanded/chat_transcript.json). Each prompt starts fresh, the model uses at most 48 tokens of context, and messages are not added to the corpus or used for retraining. The interface generates from the saved nanoGPT model; it does not use canned answers or another model API.
+The complete [chat transcript](results/expanded/chat_transcript.json) shows the prompts, responses, seeds, and unknown words. Each prompt starts fresh, so this is not a conversation with memory. The model has a 48-token context limit. Chatting does not retrain it.
 
-To run the terminal interface:
+To run the interface with the saved model:
 
 ```bash
 python -m pip install -r requirements.txt
 python chat.py --model results/expanded/model.pt --transcript chat_transcript.json
 ```
 
-To rerun the fixed evaluations on the saved expanded model:
+To rerun the evaluations:
 
 ```bash
 python run_evals.py --model results/expanded/model.pt --output rerun-evals
@@ -196,36 +212,36 @@ python run_evals.py --model results/expanded/model.pt --output rerun-evals
 
 ## What I learned
 
-- A corpus is the collection of examples used for weight updates. It controls what patterns and vocabulary the model can learn.
-- A token is a word or punctuation unit. Its ID is only a lookup index. Its embedding is the learned 64-number vector stored at that index.
-- The model predicts the next token, compares the probabilities with the actual next token, and converts the error into loss.
-- Backpropagation calculates gradients. AdamW uses those gradients to update neural-network parameters, including embeddings.
-- Held-out loss matters because falling training loss alone can reflect memorization. This split is still limited because both sides share templates and source styles.
-- Attention lets each position combine earlier context. Causal masking prevents it from looking at future tokens.
-- Temperature changes the randomness of sampling without changing any learned weight.
-- Plausible sentences and high scores on repeated templates do not mean that this tiny model understands language generally.
+- The corpus determines which vocabulary and patterns the model can learn.
+- A token is a piece of text, its ID is a lookup number, and its embedding is a learned vector.
+- Lower training loss does not prove generalization. Held-out loss and separate evaluations are also needed.
+- The model can learn repeated templates very well without understanding language broadly.
+- A larger corpus is not automatically better. My expanded data added too many rare words for the fixed vocabulary size.
+- Generated text and multiple-choice next-word scores measure different things.
+- A correct narrow answer does not mean the model understands the concept in every wording.
 
 ## Limitation and next experiment
 
-The clearest limitation is the expanded vocabulary design. I added too many low-frequency decorative words, so the 509-token retention limit removed words needed to score the chosen skills. The model also produced incorrect relation reversals even when every prompt word was known.
+My biggest mistake was making the expanded material too vocabulary-heavy. I tried to add variety, but many words appeared only once. The 509-token limit then removed words that mattered for the categories I wanted to test.
 
-My next experiment would use a smaller, more focused extension corpus with fewer unique nouns and more varied repetitions of the same negation and inverse-relation patterns. I would keep the public evaluation suite unchanged, add a separate unseen set that did not guide corpus design, and predict lower unknown-token rates and more scorable extension cases. I would change only the corpus so the result remains interpretable.
+For my next experiment, I would use fewer unique nouns and repeat the important negation and inverse-relation patterns in more varied sentence structures. I would keep the same model settings and public tests so that the corpus remains the main change. I would also create a separate unseen test set before training, because improvement on a public development suite is not enough to show generalization.
 
-## Reproduce and inspect
+## How to reproduce the runs
 
 1. Install `requirements.txt` and open [custom_llm.ipynb](custom_llm.ipynb), or open it in Colab.
-2. For the baseline, leave `corpus/` empty except for its README, set `CORPUS = "classroom"`, `TRAINING_STEPS = 3000`, and `LEARNING_RATE = 0.001`, then run all cells.
-3. For the expanded run, copy both files from [teaching_materials](teaching_materials/) into `corpus/`, keep the same settings, and run all cells from a fresh model.
-4. Download the results ZIP and executed notebook separately. Do not clear outputs.
-5. Open [embedding-viewer.html](embedding-viewer.html) locally and load a run's `checkpoint.json` to inspect initial/final embeddings and full-space cosine neighbors.
+2. For the baseline run, leave `corpus/` empty except for its README. Use `CORPUS = "classroom"`, 3,000 steps, and learning rate 0.001.
+3. For the expanded run, copy both files from [teaching_materials](teaching_materials/) into `corpus/`. Keep the same settings and run from a fresh model.
+4. Run every notebook cell and download the results ZIP and executed notebook separately.
+5. Open [embedding-viewer.html](embedding-viewer.html) locally and load the run's `checkpoint.json` to inspect the embeddings.
 
-The original result archives are preserved as [baseline ZIP](results/custom_llm_baseline_classroom_3000_results_20260922T052027Z.zip) and [expanded ZIP](results/custom_llm_expanded_negation_spatial_3000_results_20260922T055941Z.zip).
+The original downloads are preserved as the [baseline ZIP](results/custom_llm_baseline_classroom_3000_results_20260922T052027Z.zip) and [expanded ZIP](results/custom_llm_expanded_negation_spatial_3000_results_20260922T055941Z.zip).
 
-## Repository map
+## Repository contents
 
-- `notebooks/`: both executed experiments with visible outputs
-- `teaching_materials/`: the two publishable extension sources
-- `results/baseline/` and `results/expanded/`: models, plots, inspections, samples, complete eval outputs, and chat transcripts
+- `notebooks/`: both executed notebooks
+- `teaching_materials/`: my two extension files
+- `results/baseline/` and `results/expanded/`: models and all saved evidence
 - `evidence/`: chat screenshot
-- `evals/`: unchanged public evaluation suite and guide
-- `chat.py`, `run_evals.py`, `nanogpt_model.py`: runnable interface, evaluator, and pinned nanoGPT model
+- `evals/`: unchanged fixed evaluation suite
+- `chat.py` and `run_evals.py`: runnable chat and evaluation tools
+
