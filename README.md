@@ -15,6 +15,8 @@ This is a tiny word-prediction model, not a general chatbot. My main goal was to
 
 The overall score increased in both runs after training. The expanded model also did better on the new-wording group. However, my added data did not work as well as I expected for the two categories I chose. Only two extension cases were scorable, and all three negation cases were still unscorable. I explain why below.
 
+The `Correct / 48` column is the all-case success measure. The accuracy column uses only cases that were scorable because every prompt and answer-choice word was in the vocabulary. Therefore, the expanded model's 92.31% scorable accuracy means 24 correct answers among 26 scorable cases, not 92.31% of the complete 48-case suite. Its complete-suite result was 24/48, or 50.00%.
+
 ## What I chose
 
 I used these settings for both experiments:
@@ -25,6 +27,8 @@ I used these settings for both experiments:
 - the provided 48-case evaluation suite
 
 I kept the settings the same so that the main planned difference was the corpus.
+
+I chose 3,000 steps because it was the suggested meaningful training budget and was still small enough to complete on a Colab CPU in about one minute. A much smaller run, such as 10 steps, would only verify that the code worked and would not provide enough updates to judge learning. I chose an initial learning rate of 0.001 because it was the recommended starting point for this model and worked with the notebook's warmup and cosine decay. If the learning rate were too large, updates could overshoot useful parameter values and make training unstable. If it were too small, the parameters might change too little to learn the corpus within 3,000 steps.
 
 ### Baseline run
 
@@ -66,6 +70,7 @@ I kept the teaching files in `teaching_materials/` in this repository so that a 
 | Hardware | Colab CPU | Colab CPU |
 | Parameters | 111,872 | 135,936 |
 | Vocabulary size | 136 | 512 |
+| Total unique passages before split | 4,592 | 4,770 |
 | Training passages | 4,132 | 4,293 |
 | Validation passages | 460 | 477 |
 | Training unknown-token rate | 0.00% | 0.07% |
@@ -105,13 +110,18 @@ Loss measures how wrong the model's next-token predictions are. Lower is better.
 
 Both loss curves dropped a lot. Validation loss stayed higher than training loss, especially in the expanded run. This means the held-out examples were harder. I do not treat the loss numbers from the two experiments as a direct ranking because their corpora and vocabularies were different.
 
-The [untrained baseline samples](results/baseline/samples/step_0000.txt) were mostly disconnected words. The [halfway samples](results/baseline/samples/step_1500.txt) began to follow the classroom sentence templates. The [final baseline samples](results/baseline/samples/step_3000.txt) included sentences such as:
+The table below shows exact excerpts produced with the same saved generation settings. The links contain every saved sample, including garbled output.
 
-> our school has a question about the new educator and lesson .
+| Experiment and stage | Representative actual sample | Full samples |
+|---|---|---|
+| Baseline, untrained | `pear professor bond doctor course harvest team physician journey checking buyer delivery traffic...` | [step 0](results/baseline/samples/step_0000.txt) |
+| Baseline, halfway | `our school has a question about the new educator and lesson .` | [step 1,500](results/baseline/samples/step_1500.txt) |
+| Baseline, final | `the report about the nurse explains the health in detail .` | [step 3,000](results/baseline/samples/step_3000.txt) |
+| Expanded, untrained | `instructor hill professor traffic select served along closed tire kite code dim harbor...` | [step 0](results/expanded/samples/step_0000.txt) |
+| Expanded, halfway | `a review of health helped us understand the different physician .` | [step 1,500](results/expanded/samples/step_1500.txt) |
+| Expanded, final | `the local customer was mentioned in the service report yesterday .` | [step 3,000](results/expanded/samples/step_3000.txt) |
 
-> the report about the nurse explains the health in detail .
-
-The expanded run has the same saved stages: [untrained](results/expanded/samples/step_0000.txt), [halfway](results/expanded/samples/step_1500.txt), and [final](results/expanded/samples/step_3000.txt). Most final free samples still looked like classroom sentences because that corpus was much larger than my extension.
+Both untrained models produced disconnected vocabulary items. By the halfway checkpoint, both had learned punctuation and repeated classroom sentence structures. The final samples remained locally grammatical within those templates, but the expanded model's free samples still mostly resembled the much larger classroom corpus rather than negation or spatial-relation examples. This is evidence of narrow template learning, not broad language understanding.
 
 ## One token and one real update
 
@@ -193,9 +203,15 @@ I used the expanded model from run `20260922T055941_580949Z`. It had completed 3
 | `keira did not carry boots . she carried a scarf . keira carried` | `.` | Every word was known, but the model did not produce the corrected object. |
 | `the balcony is above the stream . the stream is` | `above the .` | Every word was known, but the model failed to reverse the relationship. |
 
-![Three chat interactions](evidence/expanded_chat_3_interactions.png)
+The first screenshot shows the working notebook interface submitting a prompt to the trained expanded model, displaying the generated response, saving the interaction, and refreshing the results ZIP.
 
-The complete [chat transcript](results/expanded/chat_transcript.json) shows the prompts, responses, seeds, and unknown words. Each prompt starts fresh, so this is not a conversation with memory. The model has a 48-token context limit. Chatting does not retrain it.
+![Live notebook chat interaction](evidence/expanded_chat_live_interaction.png)
+
+The second screenshot shows the complete saved record of all three actual interactions.
+
+![Saved notebook output for three chat interactions](evidence/expanded_chat_3_interactions.png)
+
+The complete [chat transcript](results/expanded/chat_transcript.json) records the prompts, generated responses, seeds, and unknown words. The transcript's model hash matches the expanded model used for the final evaluation. Each prompt starts fresh, so this is not a conversation with memory. The model has a 48-token context limit. Chatting does not retrain it or add messages to the training corpus.
 
 To run the interface with the saved model:
 
@@ -229,10 +245,23 @@ For my next experiment, I would use fewer unique nouns and repeat the important 
 ## How to reproduce the runs
 
 1. Install `requirements.txt` and open [custom_llm.ipynb](custom_llm.ipynb), or open it in Colab.
-2. For the baseline run, leave `corpus/` empty except for its README. Use `CORPUS = "classroom"`, 3,000 steps, and learning rate 0.001.
-3. For the expanded run, copy both files from [teaching_materials](teaching_materials/) into `corpus/`. Keep the same settings and run from a fresh model.
+2. For the baseline run, leave `corpus/` empty except for its README. In particular, remove any earlier copies of the two extension files. Use `CORPUS = "classroom"`, 3,000 steps, and learning rate 0.001.
+3. For the expanded run, copy only `negation_training_examples.txt` and `spatial_relations_training_examples.txt` from [teaching_materials](teaching_materials/) into `corpus/`. Keep the same settings and run from a fresh model. From the repository root, the exact setup commands are:
+
+   ```bash
+   mkdir -p corpus
+   cp teaching_materials/negation_training_examples.txt corpus/
+   cp teaching_materials/spatial_relations_training_examples.txt corpus/
+   ```
+
 4. Run every notebook cell and download the results ZIP and executed notebook separately.
 5. Open [embedding-viewer.html](embedding-viewer.html) locally and load the run's `checkpoint.json` to inspect the embeddings.
+
+After installing the requirements, the corpus and evaluation checks can be run with:
+
+```bash
+python -m unittest -v test_language_evals.py test_corpus.py
+```
 
 The original downloads are preserved as the [baseline ZIP](results/custom_llm_baseline_classroom_3000_results_20260922T052027Z.zip) and [expanded ZIP](results/custom_llm_expanded_negation_spatial_3000_results_20260922T055941Z.zip).
 
@@ -241,7 +270,6 @@ The original downloads are preserved as the [baseline ZIP](results/custom_llm_ba
 - `notebooks/`: both executed notebooks
 - `teaching_materials/`: my two extension files
 - `results/baseline/` and `results/expanded/`: models and all saved evidence
-- `evidence/`: chat screenshot
+- `evidence/`: live chat-interface screenshot and complete three-interaction screenshot
 - `evals/`: unchanged fixed evaluation suite
 - `chat.py` and `run_evals.py`: runnable chat and evaluation tools
-
